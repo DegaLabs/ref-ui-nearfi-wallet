@@ -16,6 +16,8 @@ import { CloseIcon } from '../../components/icon/Actions';
 import { NearWallet } from '../../components/icon/Wallet';
 import {
   SenderWallet,
+  NearFiWallet,
+  NearFiWalletLarge,
   SenderWalletLarge,
   RefWalletLarge,
   NearWalletLarge,
@@ -27,6 +29,7 @@ import { FormattedMessage } from 'react-intl';
 declare global {
   interface Window {
     near: any;
+    nearFiWallet: any;
   }
 }
 
@@ -86,6 +89,9 @@ export const WalletOption = ({
 }) => {
   const senderInstalled =
     typeof window.near !== 'undefined' && window.near.isSender;
+  const nearFiInstalled =
+    typeof window.nearFiWallet !== 'undefined' && window.nearFiWallet.isNearFi;
+
   return (
     <div
       className="pl-5 my-2  pr-4 relative rounded-2xl bg-black bg-opacity-20 hover:bg-opacity-40 flex items-center overflow-hidden cursor-pointer"
@@ -113,6 +119,23 @@ export const WalletOption = ({
           senderTip ? 'block' : 'hidden'
         } rounded-2xl bg-white bg-opacity-10 pl-3 pr-7 ${
           !senderInstalled ? ' text-greenLight' : 'text-primaryText'
+        }`}
+        style={{
+          fontSize: '10px',
+          lineHeight: '15px',
+          height: '30px',
+          right: '-15px',
+          bottom: '-15px',
+          textAlign: 'right',
+        }}
+      >
+        {senderTip}
+      </div>
+      <div
+        className={`whitespace-nowrap absolute ${
+          senderTip ? 'block' : 'hidden'
+        } rounded-2xl bg-white bg-opacity-10 pl-3 pr-7 ${
+          !nearFiInstalled ? ' text-primary' : 'text-primaryText'
         }`}
         style={{
           fontSize: '10px',
@@ -251,6 +274,88 @@ const SenderNotInstalledModal = (
     </Modal>
   );
 };
+
+const NearFiNotInstalledModal = (
+  props: ReactModal.Props & {
+    setShowNearFiNotInstalled: (show?: boolean) => void;
+    setShowWalletSelector: (show?: boolean) => void;
+  }
+) => {
+  const { setShowNearFiNotInstalled, setShowWalletSelector } = props;
+
+  return (
+    <Modal
+      {...props}
+      style={{
+        overlay: {
+          backdropFilter: 'blur(4px)',
+          WebkitBackdropFilter: 'blur(4px)',
+          zIndex: 160,
+        },
+        content: {
+          outline: 'none',
+        },
+      }}
+    >
+      <Card
+        className="pt-8 px-6 pb-6 flex flex-col"
+        width="xs:w-95vw w-360px"
+        style={{
+          height: '340px',
+          maxWidth: '360px',
+        }}
+      >
+        <WalletTitle
+          ifBack
+          backCallback={() => {
+            setShowNearFiNotInstalled(false);
+            setShowWalletSelector(true);
+          }}
+          closeCallback={() => setShowNearFiNotInstalled(false)}
+        />
+
+        <div className="flex justify-center pb-6">
+          <NearFiWalletLarge />
+        </div>
+
+        <div className="mx-auto text-lg">
+          <span>
+            <FormattedMessage
+              id="install_nearfi_now"
+              defaultMessage={'Install NearFi Now'}
+            />
+          </span>
+        </div>
+
+        <div className="mx-auto text-xs pt-14 pb-4">
+          <span>
+            <FormattedMessage
+              id="connect_to_dapps_with_one_click"
+              defaultMessage="Connect to dApps with one click"
+            />
+          </span>
+        </div>
+
+        <button
+          className="py-1.5 flex items-center justify-center mx-auto text-xs rounded-lg"
+          style={{
+            width: '242px',
+            background: 'linear-gradient(180deg, #00C6A2 0%, #008B72 100%)',
+            height: '40px',
+            marginBottom: '5px',
+          }}
+          onClick={() => {
+            window.open('https://nearfi.finance/', '_blank');
+          }}
+        >
+          <span>
+            <FormattedMessage id="install" defaultMessage="Install" />
+          </span>
+        </button>
+      </Card>
+    </Modal>
+  );
+};
 const ConnectingModal = (
   props: ReactModal.Props & {
     setShowConnecting: (show?: boolean) => void;
@@ -317,10 +422,17 @@ const ConnectingModal = (
 
         <div className="mx-auto pt-6 mb-5 flex justify-center">
           <span className="whitespace-nowrap">
-            <FormattedMessage
-              id="check_sender_wallet_extension"
-              defaultMessage="Please check Sender wallet extension"
-            />
+            {!window.nearFiWallet ? (
+              <FormattedMessage
+                id="check_sender_wallet_extension"
+                defaultMessage="Please check Sender wallet extension"
+              />
+            ) : (
+              <FormattedMessage
+                id="check_nearfi_wallet_extension"
+                defaultMessage="Please wait for NearFi Wallet connection"
+              />
+            )}
           </span>
         </div>
 
@@ -350,12 +462,19 @@ export const WalletSelectorModal = (
 
   const [showSenderNotInstalled, setShowSenderNotInstalled] =
     useState<boolean>(false);
+  const [showNearFiNotInstalled, setShowNearFiNotInstalled] =
+    useState<boolean>(false);
 
   const [showConnecting, setShowConnecting] = useState<boolean>(false);
 
   const [walletIcon, setWalletIcon] = useState(<SenderWalletLarge />);
+  const [nearFiWalletIcon, setNearFiWalletIcon] = useState(
+    <NearFiWalletLarge />
+  );
   const senderInstalled =
     typeof window.near !== 'undefined' && window.near.isSender;
+  const nearFiInstalled =
+    typeof window.nearFiWallet !== 'undefined' && window.nearFiWallet.isNearFi;
   return (
     <>
       <Modal
@@ -458,7 +577,55 @@ export const WalletSelectorModal = (
             }}
           />
 
-          <WalletFooter
+          <WalletOption
+            title="NearFi"
+            Icon={<NearFiWallet />}
+            senderTip={
+              !isMobileExplorer() ? (
+                <FormattedMessage
+                  id="not_supported"
+                  defaultMessage="not supported"
+                />
+              ) : nearFiInstalled ? (
+                <FormattedMessage id="installed" defaultMessage="installed" />
+              ) : (
+                <FormattedMessage
+                  id="installe_now"
+                  defaultMessage="install now"
+                />
+              )
+            }
+            decorate
+            description={
+              <FormattedMessage id="extension" defaultMessage="mobile" />
+            }
+            officialUrl="nearfi.finance"
+            connect={() => {
+              // mobile device
+              if (!isMobileExplorer()) {
+                return;
+              }
+
+              // PC && installed
+              if (nearFiInstalled) {
+                setShowWalletSelector(false);
+                setShowConnecting(true);
+                setWalletIcon(<NearFiWalletLarge />);
+                window.near = window.nearFiWallet;
+                getSenderWallet(window)
+                  .requestSignIn(REF_FARM_CONTRACT_ID)
+                  .then((res: any) => {
+                    !res?.error && setShowConnecting(false);
+                    !res?.error && globalStatedispatch({ type: 'signIn' });
+                  });
+              } else if (!senderInstalled) {
+                setShowNearFiNotInstalled(true);
+                setShowWalletSelector(false);
+              }
+            }}
+          />
+
+          {/* <WalletFooter
             ques={
               <span>
                 <FormattedMessage
@@ -474,7 +641,7 @@ export const WalletSelectorModal = (
             callback={() => {
               window.open('https://ref.finance', '_blank');
             }}
-          />
+          /> */}
         </Card>
       </Modal>
       <SenderNotInstalledModal
@@ -484,6 +651,15 @@ export const WalletSelectorModal = (
         onRequestClose={() => {
           window.location.reload();
           setShowSenderNotInstalled(false);
+        }}
+      />
+      <NearFiNotInstalledModal
+        setShowNearFiNotInstalled={setShowNearFiNotInstalled}
+        setShowWalletSelector={setShowWalletSelector}
+        isOpen={showNearFiNotInstalled}
+        onRequestClose={() => {
+          window.location.reload();
+          setShowNearFiNotInstalled(false);
         }}
       />
 

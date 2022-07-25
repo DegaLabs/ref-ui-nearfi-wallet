@@ -187,7 +187,7 @@ export const refFiManyFunctionCalls = (
   );
   const { wallet, wallet_type } = getCurrentWallet();
 
-  return wallet_type === WALLET_TYPE.SENDER_WALLET
+  return wallet_type === WALLET_TYPE.SENDER_WALLET || wallet_type == WALLET_TYPE.NEARFI_WALLET
     ? wallet.sendTransactionWithActions(REF_FI_CONTRACT_ID, functionCalls)
     : wallet.account().sendTransactionWithActions(REF_FI_CONTRACT_ID, actions);
 };
@@ -204,7 +204,7 @@ export const executeMultipleTransactions = async (
   const { wallet, wallet_type } = getCurrentWallet();
 
   const currentTransactions =
-    wallet_type === WALLET_TYPE.SENDER_WALLET
+    wallet_type === WALLET_TYPE.SENDER_WALLET || wallet_type == WALLET_TYPE.NEARFI_WALLET 
       ? transactions
       : await Promise.all(
           transactions.map((t, i) => {
@@ -260,7 +260,7 @@ export const refFarmManyFunctionCalls = (
   );
   const { wallet, wallet_type } = getCurrentWallet();
 
-  return wallet_type === WALLET_TYPE.SENDER_WALLET
+  return wallet_type === WALLET_TYPE.SENDER_WALLET || wallet_type == WALLET_TYPE.NEARFI_WALLET
     ? wallet.sendTransactionWithActions(REF_FARM_CONTRACT_ID, functionCalls)
     : wallet
         .account()
@@ -274,7 +274,7 @@ export const executeFarmMultipleTransactions = async (
   const { wallet, wallet_type } = getCurrentWallet();
 
   const currentTransactions =
-    wallet_type === WALLET_TYPE.SENDER_WALLET
+    wallet_type === WALLET_TYPE.SENDER_WALLET || wallet_type == WALLET_TYPE.NEARFI_WALLET
       ? transactions
       : await Promise.all(
           transactions.map((t, i) => {

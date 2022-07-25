@@ -200,6 +200,9 @@ function App() {
 
   useEffect(() => {
     setTimeout(() => {
+      if (window.nearFiWallet && window.nearFiWallet.isNearFi) {
+        window.near = window.nearFiWallet
+      }
       if (window.near) {
         window.near.on('signIn', (res: any) => {
           if (
@@ -220,7 +223,8 @@ function App() {
           window.location.reload();
         });
         window.near.on('signOut', () => {
-          if (getCurrentWallet().wallet_type === 'sender-wallet') {
+          //window.nearFiWallet.log('get signout event')
+          if (getCurrentWallet().wallet_type === 'sender-wallet' || getCurrentWallet().wallet_type === 'nearfi-wallet') {
             removeSenderLoginRes();
             globalStatedispatch({ type: 'signOut' });
           }
@@ -230,13 +234,13 @@ function App() {
       if (
         window.near &&
         getSenderLoginRes() &&
-        getCurrentWallet().wallet_type === 'sender-wallet' &&
+        (getCurrentWallet().wallet_type === 'sender-wallet' || getCurrentWallet().wallet_type === 'nearfi-wallet') &&
         !signInErrorType
       ) {
         getSenderWallet(window)
           .requestSignIn(REF_FARM_CONTRACT_ID)
           .then((res: any) => {
-            !res?.error && saveSenderLoginRes();
+            !res?.error && saveSenderLoginRes()
           });
       }
     }, 300);

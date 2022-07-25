@@ -95,6 +95,7 @@ export const setCallbackUrl = (res: any) => {
 export enum WALLET_TYPE {
   WEB_WALLET = 'near-wallet',
   SENDER_WALLET = 'sender-wallet',
+  NEARFI_WALLET = 'nearfi-wallet'
 }
 
 export enum SENDER_ERROR {
@@ -214,7 +215,7 @@ function senderWalletFunc(window: Window) {
       });
   };
 
-  this.walletType = WALLET_TYPE.SENDER_WALLET;
+  this.walletType = WALLET_TYPE.SENDER_WALLET
 }
 
 senderWalletFunc.prototype = window.near;
@@ -235,25 +236,23 @@ export const getAccountName = (accountId: string) => {
 };
 
 export const getCurrentWallet = () => {
-  const SENDER_LOGIN_RES = getSenderLoginRes();
+  const SENDER_LOGIN_RES = getSenderLoginRes()
 
-  if (window.near && SENDER_LOGIN_RES && !webWallet.isSignedIn()) {
-    senderWalletFunc.prototype = window.near;
-
+  if (window.near && (window.near.isSender || window.near.isNearFi) && SENDER_LOGIN_RES && !webWallet.isSignedIn()) {
+    senderWalletFunc.prototype = window.near
     return {
       wallet: new (senderWalletFunc as any)(window),
-      wallet_type: WALLET_TYPE.SENDER_WALLET,
+      wallet_type: window.near.isNearFi ? WALLET_TYPE.NEARFI_WALLET : WALLET_TYPE.SENDER_WALLET,
       accountName: getAccountName(window.near.getAccountId()),
-    };
+    }
   }
-
   return {
     wallet: webWallet,
     wallet_type: WALLET_TYPE.WEB_WALLET,
 
     accountName: getAccountName(webWallet.getAccountId()),
-  };
-};
+  }
+}
 
 export const WalletContext = createContext(null);
 
